@@ -1,64 +1,27 @@
-# ==============================
-# 🔹 LOG FILES
-# ==============================
+# Logs
 logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-# ==============================
-# 🔹 DEPENDENCIES
-# (Never push node_modules)
-# ==============================
+# Dependencies
 node_modules/
 backend/node_modules/
 
-# ==============================
-# 🔹 BUILD OUTPUT
-# (Vite build output + dist)
-# ==============================
+# Build output
 dist/
-dist-ssr/
 build/
-*.local
 
-# ==============================
-# 🔹 EDITOR / OS FILES
-# ==============================
-.vscode/*
-!.vscode/extensions.json
+# Environment variables
+.env
+backend/.env
+.env.local
+.env.development.local
+.env.production.local
+
+# Editor / system files
+.vscode/
 .idea/
 .DS_Store
 Thumbs.db
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 
-# ==============================
-# 🔹 ENVIRONMENT FILES
-# (Keep secrets local)
-# ==============================
-.env
-.env.*
-!.env.example
-
-# ==============================
-# 🔹 BACKEND SPECIFIC
-# ==============================
-backend/.env
-backend/.env.*
-backend/uploads/
-backend/temp/
-backend/logs/
-
-# ==============================
-# 🔹 MISC
-# ==============================
-*.zip
-*.tar
-*.tar.gz
+# Vercel or deployment artifacts
+.vercel/

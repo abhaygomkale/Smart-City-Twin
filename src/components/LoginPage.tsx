@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
+import api from "../services/api"; // ✅ make sure this file exists
 import {
   Lock,
   Mail,
@@ -29,14 +30,26 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // ✅ NEW BACKEND-CONNECTED LOGIN FUNCTION
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      const res = await api.post("/auth/login", { email, password });
+
+      // ✅ Store token & user info
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("isAuthenticated", "true");
-      setIsLoading(false);
+
       onLogin();
-    }, 1200);
+    } catch (error: any) {
+      console.error("❌ Login failed:", error.response?.data || error.message);
+      alert(error.response?.data?.message || "Invalid credentials. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -70,7 +83,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             transition={{ duration: 0.6 }}
             className="space-y-5"
           >
-            {/* Logo & Title */}
             <div className="flex items-center gap-5">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500 shadow-2xl flex items-center justify-center relative">
                 <Activity className="h-8 w-8 text-white" />
@@ -92,90 +104,21 @@ export function LoginPage({ onLogin }: LoginPageProps) {
 
             {/* Feature Cards */}
             <div className="grid grid-cols-4 gap-4">
-              {[
-                { icon: Wind, label: "CO₂", value: "1,250", unit: "ppm", color: "from-blue-500 to-cyan-500" },
-                { icon: Leaf, label: "AQI", value: "Good", color: "from-green-500 to-emerald-500" },
-                { icon: Database, label: "Data", value: "24M+", color: "from-purple-500 to-pink-500" },
-                { icon: TrendingDown, label: "Trend", value: "-8%", color: "from-teal-500 to-cyan-500" },
-              ].map((feature, idx) => {
-                const Icon = feature.icon;
-                return (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.4 + idx * 0.1 }}
-                    className="bg-white/5 backdrop-blur-lg rounded-xl p-4 border border-white/10 hover:bg-white/10 hover:scale-105 transition-all cursor-pointer"
-                  >
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${feature.color} flex items-center justify-center mb-2`}>
-                      <Icon className="h-5 w-5 text-white" />
-                    </div>
-                    <p className="text-2xl text-white">{feature.value}</p>
-                    <p className="text-xs text-blue-200">{feature.label}</p>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* System + Features Panels */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* System Status */}
-              <div className="bg-white/5 backdrop-blur-lg rounded-xl p-4 border border-white/10">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                  <span className="text-sm text-blue-200">System Online</span>
-                  <Badge className="ml-auto bg-green-500/20 text-green-300 border-green-400/30 text-xs">Live</Badge>
-                </div>
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div className="bg-white/5 rounded-lg p-2">
-                    <div className="flex justify-center items-center gap-1 text-white">
-                      <Activity className="h-4 w-4" />
-                      <span className="text-xl">250+</span>
-                    </div>
-                    <p className="text-xs text-blue-200/70">Sensors</p>
+              {[Wind, Leaf, Database, TrendingDown].map((Icon, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 + idx * 0.1 }}
+                  className="bg-white/5 backdrop-blur-lg rounded-xl p-4 border border-white/10 hover:bg-white/10 hover:scale-105 transition-all cursor-pointer"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-2">
+                    <Icon className="h-5 w-5 text-white" />
                   </div>
-                  <div className="bg-white/5 rounded-lg p-2">
-                    <div className="flex justify-center items-center gap-1 text-white">
-                      <MapPin className="h-4 w-4" />
-                      <span className="text-xl">3</span>
-                    </div>
-                    <p className="text-xs text-blue-200/70">Zones</p>
-                  </div>
-                  <div className="bg-white/5 rounded-lg p-2">
-                    <div className="flex justify-center items-center gap-1 text-white">
-                      <BarChart3 className="h-4 w-4" />
-                      <span className="text-xl">98%</span>
-                    </div>
-                    <p className="text-xs text-blue-200/70">Accuracy</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Platform Features */}
-              <div className="bg-white/5 backdrop-blur-lg rounded-xl p-4 border border-white/10">
-                <h3 className="text-sm text-blue-200 mb-3">Platform Features</h3>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { icon: Zap, label: "Real-time", color: "text-cyan-400", border: "border-blue-400/20" },
-                    { icon: Shield, label: "Secure", color: "text-emerald-400", border: "border-green-400/20" },
-                    { icon: BarChart3, label: "AI-Powered", color: "text-purple-400", border: "border-purple-400/20" },
-                  ].map((f, i) => {
-                    const Icon = f.icon;
-                    return (
-                      <motion.div
-                        key={i}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.8 + i * 0.1 }}
-                        className={`bg-gradient-to-br from-white/5 to-white/10 rounded-lg p-3 border ${f.border} text-center`}
-                      >
-                        <Icon className={`h-6 w-6 mx-auto mb-1 ${f.color}`} />
-                        <p className="text-xs text-blue-200">{f.label}</p>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
+                  <p className="text-2xl text-white">Demo</p>
+                  <p className="text-xs text-blue-200">Metric</p>
+                </motion.div>
+              ))}
             </div>
           </motion.div>
 
@@ -198,6 +141,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 </div>
 
                 <form onSubmit={handleLogin} className="space-y-4">
+                  {/* Email */}
                   <div>
                     <label className="text-sm text-blue-100">Email Address</label>
                     <div className="relative mt-2">
@@ -213,6 +157,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     </div>
                   </div>
 
+                  {/* Password */}
                   <div>
                     <label className="text-sm text-blue-100">Password</label>
                     <div className="relative mt-2">
@@ -235,6 +180,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     </div>
                   </div>
 
+                  {/* Remember + Forgot */}
                   <div className="flex items-center justify-between text-sm">
                     <label className="flex items-center gap-2 cursor-pointer text-blue-100 hover:text-white">
                       <input type="checkbox" className="w-4 h-4 rounded border-white/30 bg-white/10" />
@@ -245,6 +191,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                     </button>
                   </div>
 
+                  {/* Submit */}
                   <Button
                     type="submit"
                     disabled={isLoading}
@@ -264,31 +211,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                       <span>Sign In to Dashboard →</span>
                     )}
                   </Button>
-
-                  {/* Demo Credentials */}
-                  <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-400/30 rounded-xl p-3 mt-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Zap className="h-4 w-4 text-cyan-400" />
-                      <p className="text-xs text-blue-200">Demo Credentials</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="bg-white/5 rounded-lg px-2 py-1.5">
-                        <span className="text-blue-300">Email: </span>
-                        <span className="text-white">admin@nagpur.gov.in</span>
-                      </div>
-                      <div className="bg-white/5 rounded-lg px-2 py-1.5">
-                        <span className="text-blue-300">Pass: </span>
-                        <span className="text-white">demo123</span>
-                      </div>
-                    </div>
-                  </div>
                 </form>
-
-                <div className="mt-4 pt-3 border-t border-white/10 text-center">
-                  <p className="text-xs text-blue-200 flex items-center justify-center gap-1">
-                    <Lock className="h-3 w-3" /> Secured with encryption
-                  </p>
-                </div>
               </div>
               <div className="h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500" />
             </div>
